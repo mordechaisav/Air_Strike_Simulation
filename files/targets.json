@@ -1,5 +1,5 @@
-{
-  "targets": [
+
+ [
     {
       "City": "Tehran",
       "Priority": 5
@@ -61,4 +61,3 @@
       "Priority": 1
     }
   ]
-}

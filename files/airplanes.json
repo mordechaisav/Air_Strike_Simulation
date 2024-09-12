@@ -1,5 +1,4 @@
-{
-  "aircrafts": [
+ [
     {
       "type": "F-16",
       "speed": 2400,
@@ -36,4 +35,3 @@
       "fuel_capacity": 4900
     }
   ]
-}

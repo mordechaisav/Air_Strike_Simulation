@@ -1,5 +1,4 @@
-{
-  "pilots": [
+ [
     {
       "name": "John Doe",
       "skill_level": 8
@@ -41,4 +40,3 @@
       "skill_level": 4
     }
   ]
-}
