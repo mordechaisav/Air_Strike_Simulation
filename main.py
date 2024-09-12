@@ -1,5 +1,5 @@
 from packages import classes,read_from_files,math_func,data_from_api
-import math
+from datetime import datetime, timedelta
 import requests
 
 airplanes_path = 'files/airplanes.json'
@@ -22,7 +22,7 @@ def load_data():
     for target in targets:
         target_obj = classes.Target(target['City'], target['Priority'])
         list_of_targets.append(target_obj)
-    return list_of_airplanes, list_of_pilots, list_of_targets
+    return [list_of_airplanes, list_of_pilots, list_of_targets]
 
 
 
@@ -38,8 +38,8 @@ def calculate_distance_to_target(targets):
     return targets
 
 
-import requests
-from datetime import datetime, timedelta
+
+
 
 def get_weather_of_targets(targets):
     for target in targets:
@@ -52,26 +52,50 @@ def get_weather_of_targets(targets):
         for forecast in forecasts:
             forecast_time = datetime.strptime(forecast['dt_txt'], "%Y-%m-%d %H:%M:%S")
             if forecast_time.hour == 0 and forecast_time >= midnight:
-                selected_forecasts.append({
-                    'datetime': forecast_time,
+                selected_forecasts =({
                     'weather': forecast['weather'][0]['main'],
                     'clouds': forecast['clouds']['all'],
                     'wind_speed': forecast['wind']['speed']
                 })
-            if len(selected_forecasts) == 3:
+            if len(selected_forecasts) == 1:
                 break
-
 
         target.weather = selected_forecasts
 
     return targets
 
-targets = load_data()[2]
-targets = calculate_distance_to_target(targets)
-targets = get_weather_of_targets(targets)
+def create_attack(airplanes, pilots, targets):
+    # find the target with the high wind speed
+    max_wind_speed = max(target.weather['wind_speed'] for target in targets)
 
-for forecast in targets[0].weather:
-    print(f"Date: {forecast['datetime']}, Weather: {forecast['weather']}, Clouds: {forecast['clouds']}%, Wind Speed: {forecast['wind_speed']} m/s")
+    # create list of all combinations of airplanes and pilots
+    all_combinations = []
+
+    for target in targets:
+        for airplane in airplanes:
+            for pilot in pilots:
+                priority_score = math_func.calculate_priority_score(target.priority)
+                direction_score = math_func.calculate_aircraft_score(target.distance, airplane.fuel_capacity)
+                weather_score = math_func.weather_score(target.weather,max_wind_speed)
+                pilot_score = math_func.calculate_skill_level_score(pilot.skill)
+                final_score = (priority_score + direction_score + weather_score + pilot_score) / 4
+                all_combinations.append(classes.Attack(target, airplane, pilot, final_score))
+    return all_combinations
+
+data = load_data()
+data[2] = calculate_distance_to_target(data[2])
+data[2] = get_weather_of_targets(data[2])
+all_combinations = create_attack(*data)
+# print all combinations to the console
+
+print(all_combinations)
+
+# write the all combinations to a csv file with this rows: target_city,priority, airplane_type, pilot_name, final_score
+
+
+
+
+
 
 
 
