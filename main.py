@@ -79,7 +79,7 @@ def create_attack(airplanes, pilots, targets):
                 direction_score = math_func.calculate_aircraft_score(target.distance, airplane.fuel_capacity)
                 weather_score = math_func.weather_score(target.weather,max_wind_speed)
                 pilot_score = math_func.calculate_skill_level_score(pilot.skill)
-                final_score = (priority_score + direction_score + weather_score + pilot_score) / 4
+                final_score = (priority_score + direction_score + weather_score + pilot_score) // 4
                 all_combinations.append(classes.Attack(target, airplane, pilot, final_score))
     return all_combinations
 
