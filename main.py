@@ -1,6 +1,7 @@
 from packages import classes,read_from_files,math_func,data_from_api
 from datetime import datetime, timedelta
 import requests
+import csv
 
 airplanes_path = 'files/airplanes.json'
 pilots_path = 'files/pilots.json'
@@ -82,18 +83,20 @@ def create_attack(airplanes, pilots, targets):
                 all_combinations.append(classes.Attack(target, airplane, pilot, final_score))
     return all_combinations
 
-data = load_data()
-data[2] = calculate_distance_to_target(data[2])
-data[2] = get_weather_of_targets(data[2])
-all_combinations = create_attack(*data)
-# print all combinations to the console
+def initialize_simulation():
+    data = load_data()
+    data[2] = calculate_distance_to_target(data[2])
+    data[2] = get_weather_of_targets(data[2])
+    all_combinations = create_attack(*data)
+    # print all combinations to the console
+    for attack in all_combinations:
+        print(
+            f"Target: {attack.target_city},weather: {attack.weather}, Priority: {attack.priority}, Airplane: {attack.assigned_aircraft}, Pilot: {attack.assigned_pilot}, Final Score: {attack.score}")
 
-print(all_combinations)
-
-# write the all combinations to a csv file with this rows: target_city,priority, airplane_type, pilot_name, final_score
+    read_from_files.write_to_csv(all_combinations)
 
 
-
+initialize_simulation()
 
 
 

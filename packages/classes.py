@@ -19,7 +19,7 @@ class Target:
         self.weather = None
 
 class Attack:
-    def __init__(self, airplane, pilot, target, score):
+    def __init__(self, target, airplane, pilot, score):
         self.target_city = target.city
         self.priority = target.priority
         self.assigned_pilot = pilot.name
