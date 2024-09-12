@@ -1,4 +1,4 @@
-from packages import classes,read_from_files
+from packages import classes,read_from_files,math_func,data_from_api
 import math
 import requests
 
@@ -24,38 +24,60 @@ def load_data():
         list_of_targets.append(target_obj)
     return list_of_airplanes, list_of_pilots, list_of_targets
 
-def haversine_distance(lat1, lon1, lat2, lon2):
-    r = 6371.0 # Radius of the Earth in kilometers
-    # Convert degrees to radians
-    lat1_rad = math.radians(lat1)
-    lon1_rad = math.radians(lon1)
-    lat2_rad = math.radians(lat2)
-    lon2_rad = math.radians(lon2)
-    # Calculate differences between the coordinates
-    dlat = lat2_rad - lat1_rad
-    dlon = lon2_rad - lon1_rad
-    # Apply Haversine formula
-    a = math.sin(dlat / 2)**2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(dlon / 2)**2
-    c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-    # Calculate the distance
-    distance = r * c
-    return distance
 
-def get_url_of_location(city):
-    url = f'http://api.openweathermap.org/geo/1.0/direct?q={city}&appid=4982a2a3d948f64443610878443881fd'
-    return url
 
 def calculate_distance_to_target(targets):
-    url_of_location_Israel = get_url_of_location('Israel')
+    url_of_location_Israel = data_from_api.get_url_of_location('Israel')
     location_of_Israel = requests.get(url_of_location_Israel).json()[0]
     location_of_Israel= [location_of_Israel['lat'], location_of_Israel['lon']]
     for target in targets:
-        url_of_location_target = get_url_of_location(target.city)
+        url_of_location_target = data_from_api.get_url_of_location(target.city)
         location_of_target = requests.get(url_of_location_target).json()[0]
         location_of_target = [location_of_target['lat'], location_of_target['lon']]
-        target.distance = haversine_distance(*location_of_Israel, *location_of_target)
-    return location_of_Israel, targets
-print(calculate_distance_to_target(load_data()[2]))
+        target.distance = math_func.haversine_distance(*location_of_Israel, *location_of_target)
+    return targets
+
+
+import requests
+from datetime import datetime, timedelta
+
+def get_weather_of_targets(targets):
+    for target in targets:
+        weather_url = data_from_api.get_url_of_weather(target.city)
+        response = requests.get(weather_url).json()
+        now = datetime.now()
+        midnight = datetime(now.year, now.month, now.day) + timedelta(days=1)  # חצות הקרוב
+        forecasts = response['list']
+        selected_forecasts = []
+        for forecast in forecasts:
+            forecast_time = datetime.strptime(forecast['dt_txt'], "%Y-%m-%d %H:%M:%S")
+            if forecast_time.hour == 0 and forecast_time >= midnight:
+                selected_forecasts.append({
+                    'datetime': forecast_time,
+                    'weather': forecast['weather'][0]['main'],
+                    'clouds': forecast['clouds']['all'],
+                    'wind_speed': forecast['wind']['speed']
+                })
+            if len(selected_forecasts) == 3:
+                break
+
+
+        target.weather = selected_forecasts
+
+    return targets
+
+targets = load_data()[2]
+targets = calculate_distance_to_target(targets)
+targets = get_weather_of_targets(targets)
+
+for forecast in targets[0].weather:
+    print(f"Date: {forecast['datetime']}, Weather: {forecast['weather']}, Clouds: {forecast['clouds']}%, Wind Speed: {forecast['wind_speed']} m/s")
+
+
+
+
+
+
 
 
 

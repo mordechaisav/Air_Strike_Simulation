@@ -16,3 +16,4 @@ class Target:
         self.city = city
         self.priority = priority
         self.distance_to_israel = None
+        self.weather = None
